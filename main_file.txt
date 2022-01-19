@@ -22,7 +22,7 @@ def decontracted(phrase):
     phrase=re.sub(r"\'m","am",sentence)
     return phrase
     
-data=pd.read_csv('E:\miniproject\archive\Reviews.csv')
+data=pd.read_csv('Preprocessed Data set')
 data.head()
 
 
