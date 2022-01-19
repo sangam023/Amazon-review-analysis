@@ -1,0 +1,80 @@
+from nltk.stem import SnowballStemmer
+import pandas as pd
+import numpy as np
+import nltk
+import re
+from nltk.corpus import stopwords
+
+from bs4 import BeautifulSoup
+
+
+
+def decontracted(phrase):
+    phrase=re.sub(r"won't","will not",phrase)
+    phrase=re.sub(r"can't","can not",phrase)
+    phrase=re.sub(r"n\'t","not",phrase)
+    phrase=re.sub(r"\'re","are",phrase)
+    phrase=re.sub(r"\'s","is",phrase)
+    phrase=re.sub(r"\'d","would",phrase)
+    phrase=re.sub(r"\'ll","will",phrase)    
+    phrase=re.sub(r"\'t","not",sentence)
+    phrase=re.sub(r"\'ve","have",sentence)
+    phrase=re.sub(r"\'m","am",sentence)
+    return phrase
+    
+data=pd.read_csv('E:\miniproject\archive\Reviews.csv')
+data.head()
+
+
+
+data=data[data['Score']!=3]
+
+
+def xyz(x):
+    if x>3:
+        return 'positive'
+    else:
+        return 'negative'
+
+
+s=data['Score']
+d=list(map(xyz,s))
+data['Score']=d
+
+
+data_f=data.sort_values('ProductId').drop_duplicates(subset=['UserId','ProfileName','Time','Summary','Text'],keep='first',inplace=False)
+Final_Values=data_f[data_f['HelpfulnessDenominator']>=data_f['HelpfulnessNumerator']]
+Final_Values
+
+
+
+stop=set(stopwords.words('english'))
+snow = nltk.stem.SnowballStemmer('english')
+stop
+
+
+
+preprocessed_reviews=[]
+for sentence in Final_Values['Text'].values:
+    sentence=re.sub(r"http\S+"," ",sentence)
+    sentence=BeautifulSoup(sentence,'lxml').get_text()
+    cleanr=re.compile('<.*?>')
+    sentence=re.sub(cleanr,' ',sentence)
+    sentence=decontracted(sentence)
+    sentence=re.sub("\S\*\d\S*"," ",sentence)
+    sentence=re.sub("[^A-Za-z]+"," ",sentence)
+    sentence=re.sub(r'[?|!|\'|"|#]',r' ',sentence)
+    sentence=re.sub(r'[.|,|)|(|\|/]',r' ',sentence)
+    sentence='  '.join(snow.stem(e.lower()) for e in sentence.split() if e.lower() not in stop)
+    preprocessed_reviews.append(sentence.strip())
+
+
+
+Final_Values['preprocessed_reviews']=preprocessed_reviews
+Final_Values['preprocessed_reviews']=Final_Values['preprocessed_reviews']
+Final_Values['preprocessed_reviews'].iloc[0]
+Final_Values
+
+
+Final_Values.to_csv('preprocessed_reviews.csv',index=False)
+
